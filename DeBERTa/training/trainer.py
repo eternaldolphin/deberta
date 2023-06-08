@@ -153,12 +153,14 @@ class DistributedTrainer:
 
   def save_model(self, args, checkpoint_dir, chk_postfix, model, optimizer):
     save_path= os.path.join(checkpoint_dir, f'pytorch.model-{chk_postfix}.bin')
+    save_model_path = os.path.join(checkpoint_dir, f'pytorch.model-{chk_postfix}.pth')
     if hasattr(model, 'module'):
       model_state = OrderedDict([(n,p) for n,p in model.module.state_dict().items()])
     else:
       model_state = OrderedDict([(n,p) for n,p in model.state_dict().items()])
     if args.rank < 1:
       torch.save(model_state, save_path)
+      torch.save(model, save_model_path)
     return save_path
 
   def _eval_model(self, with_checkpoint=True):

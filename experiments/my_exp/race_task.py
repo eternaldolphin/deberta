@@ -101,7 +101,7 @@ dataset_size = dataset_size, shuffle=True, **kwargs)
   def load_jsonl(self, path):
     examples = []
     with open(path, encoding='utf-8') as fs:
-      data = [json.loads(l) for l in fs]
+      data = eval(fs.read())
       for d in data:
         page = d["article"]
         for q,o,a in zip(d["questions"], d["options"], d["answers"]):

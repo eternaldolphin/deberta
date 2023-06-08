@@ -73,6 +73,18 @@ dataset_size = dataset_size, shuffle=True, **kwargs)
       d.data = DynamicDataset(d.data, feature_fn = self.get_feature_fn(max_seq_len=max_seq_len), dataset_size = _size, **kwargs)
     return ds
 
+  def demo_data(self,max_seq_len=512, dataset_size = None, **kwargs):
+    """See base class."""
+    ds = [
+        self._data('middle', 'demo_data.jsonl', 'demo'),
+        ]
+    
+    for d in ds:
+      if dataset_size is None:
+        _size = len(d.data)
+      d.data = DynamicDataset(d.data, feature_fn = self.get_feature_fn(max_seq_len=max_seq_len), dataset_size = _size, **kwargs)
+    return ds
+
   def _data(self, name, path, type_name = 'dev', ignore_metric=False):
     if isinstance(path, str):
       path = [path]

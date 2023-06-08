@@ -273,7 +273,7 @@ def run_predict(args, model, device, eval_data, prefix=None):
           predict_fn(predicts.detach().cpu().numpy(), args.output_dir, name, prefix)
 
 def main(args):
-  if not args.do_train and not args.do_eval and not args.do_predict:
+  if not args.do_train and not args.do_eval and not args.do_predict and not args.do_demo:
     raise ValueError("At least one of `do_train` or `do_eval` or `do_predict` must be True.")
   random.seed(args.seed)
   np.random.seed(args.seed)
@@ -289,11 +289,15 @@ def main(args):
   if args.do_predict:
     test_data = task.test_data(max_seq_len=args.max_seq_length)
     logger.info("  Prediction batch size = %d", args.predict_batch_size)
-
+  if args.do_demo:
+    demo_data = task.demo_data(max_seq_len=args.max_seq_length)
+    # logger.info("  Prediction batch size = %d", args.predict_batch_size)
   if args.do_train:
     train_data = task.train_data(max_seq_len=args.max_seq_length, debug=args.debug)
   model_class_fn = task.get_model_class_fn()
   model = create_model(args, len(label_list), model_class_fn)
+  if args.load_checkpoint:
+    model = torch.load('/home/JJ_Group/dph/DeBERTa/experiments/my_exp/output/debug_train/pytorch.model-000100.pth')
   if args.do_train:
     with open(os.path.join(args.output_dir, 'model_config.json'), 'w', encoding='utf-8') as fs:
       fs.write(model.config.to_json_string() + '\n')
@@ -317,6 +321,9 @@ def main(args):
 
   if args.do_predict:
     run_predict(args, model, device, test_data, prefix=args.tag)
+
+  if args.do_demo:
+    run_predict(args, model, device, demo_data, prefix=args.tag)
 
 class LoadTaskAction(argparse.Action):
   _registered = False
@@ -387,6 +394,11 @@ def build_argument_parser():
             default=False,
             action='store_true',
             help="Whether to run prediction on the test set.")
+  
+  parser.add_argument("--do_demo",
+            default=False,
+            action='store_true',
+            help="Whether to run prediction on the test set.")
 
   parser.add_argument("--eval_batch_size",
             default=32,
@@ -419,6 +431,11 @@ def build_argument_parser():
   parser.add_argument('--debug',
             default=False,
             type=boolean_string,
+            help="Whether to cache cooked binary features")
+
+  parser.add_argument('--load_checkpoint',
+            default=False,
+            action='store_true',
             help="Whether to cache cooked binary features")
 
   parser.add_argument('--pre_trained',
